@@ -96,6 +96,10 @@ module Marginalia
         end
       end
 
+      def self.stack_trace
+        caller
+      end
+
       def self.hostname
         @cached_hostname ||= Socket.gethostname
       end
