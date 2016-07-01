@@ -18,7 +18,7 @@ module Marginalia
       self.components.each do |c|
         component_value = self.send(c)
         if component_value.present?
-          ret << "#{c.to_s}:#{component_value.to_s},"
+          ret << "#{c.to_s}__:__#{component_value.to_s}__,__"
         end
       end
       ret.chop!
