@@ -97,7 +97,9 @@ module Marginalia
       end
 
       def self.stack_trace
-        caller
+        trace = caller.select { |e| e =~ /releases/ }
+        trace = ['(not available)'] unless trace.any?
+        trace
       end
 
       def self.hostname
