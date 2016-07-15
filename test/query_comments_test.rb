@@ -107,13 +107,6 @@ class MarginaliaTest < MiniTest::Test
     @env = Rack::MockRequest.env_for('/')
   end
 
-  def test_double_annotate
-    ActiveRecord::Base.connection.expects(:annotate_sql).returns("select id from posts").once
-    ActiveRecord::Base.connection.send(:select, "select id from posts")
-  ensure
-    ActiveRecord::Base.connection.unstub(:annotate_sql)
-  end
-
   def test_query_commenting_on_mysql_driver_with_no_action
     ActiveRecord::Base.connection.execute "select id from posts"
     assert_match %r{select id from posts /\*application:rails\*/$}, @queries.first
@@ -123,22 +116,6 @@ class MarginaliaTest < MiniTest::Test
     def test_query_commenting_on_mysql_driver_with_binary_chars
       ActiveRecord::Base.connection.execute "select id from posts /* \x81\x80\u0010\ */"
       assert_equal "select id from posts /* \x81\x80\u0010 */ /*application:rails*/", @queries.first
-    end
-  end
-
-  if ENV["DRIVER"] =~ /^postgres/
-    def test_query_commenting_on_postgres_update
-      ActiveRecord::Base.connection.expects(:annotate_sql).returns("update posts set id = 1").once
-      ActiveRecord::Base.connection.send(:exec_update, "update posts set id = 1")
-    ensure
-      ActiveRecord::Base.connection.unstub(:annotate_sql)
-    end
-
-    def test_query_commenting_on_postgres_delete
-      ActiveRecord::Base.connection.expects(:annotate_sql).returns("delete from posts where id = 1").once
-      ActiveRecord::Base.connection.send(:exec_delete, "delete from posts where id = 1")
-    ensure
-      ActiveRecord::Base.connection.unstub(:annotate_sql)
     end
   end
 

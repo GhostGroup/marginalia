@@ -33,6 +33,12 @@ module Marginalia
       self.marginalia_job = nil
     end
 
+    def self.stack_trace
+      trace = caller.select { |e| e =~ /releases/ }
+      trace = ['(not available)'] unless trace.any?
+      trace
+    end
+
     private
       def self.marginalia_controller=(controller)
         Thread.current[:marginalia_controller] = controller
@@ -94,12 +100,6 @@ module Marginalia
           end
           last_line
         end
-      end
-
-      def self.stack_trace
-        trace = caller.select { |e| e =~ /releases/ }
-        trace = ['(not available)'] unless trace.any?
-        trace
       end
 
       def self.hostname

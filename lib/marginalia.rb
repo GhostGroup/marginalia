@@ -39,36 +39,42 @@ module Marginalia
       end
     end
 
-    def annotate_sql(sql)
-      comment = Marginalia::Comment.construct_comment
-      if comment.present? && !sql.include?(comment)
-        "#{sql} /*#{comment}*/"
-      else
-        sql
+    def log_stack_trace(sql)
+      stack_trace = Marginalia::Comment.stack_trace
+      if stack_trace.present? && defined?(WM::Logger) && defined?(APP_CONFIG)
+        WM::Logger.new(APP_CONFIG['new_aws']).message(
+          feature_key: 'sql_stack_trace',
+          message: {
+            sql: sql,
+            stack_trace: stack_trace
+          }
+        )
       end
+
+      sql
     end
 
     def execute_with_marginalia(sql, name = nil)
-      execute_without_marginalia(annotate_sql(sql), name)
+      execute_without_marginalia(log_stack_trace(sql), name)
     end
 
     def exec_query_with_marginalia(sql, name = 'SQL', binds = [])
-      exec_query_without_marginalia(annotate_sql(sql), name, binds)
+      exec_query_without_marginalia(log_stack_trace(sql), name, binds)
     end
 
     if ActiveRecord::VERSION::MAJOR >= 5
       def exec_query_with_marginalia(sql, name = 'SQL', binds = [], options = {})
         options[:prepare] ||= false
-        exec_query_without_marginalia(annotate_sql(sql), name, binds, options)
+        exec_query_without_marginalia(log_stack_trace(sql), name, binds, options)
       end
     end
 
     def exec_delete_with_marginalia(sql, name = 'SQL', binds = [])
-      exec_delete_without_marginalia(annotate_sql(sql), name, binds)
+      exec_delete_without_marginalia(log_stack_trace(sql), name, binds)
     end
 
     def exec_update_with_marginalia(sql, name = 'SQL', binds = [])
-      exec_update_without_marginalia(annotate_sql(sql), name, binds)
+      exec_update_without_marginalia(log_stack_trace(sql), name, binds)
     end
   end
 
