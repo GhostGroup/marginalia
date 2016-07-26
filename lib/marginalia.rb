@@ -40,15 +40,17 @@ module Marginalia
     end
 
     def log_stack_trace(sql)
-      stack_trace = Marginalia::Comment.stack_trace
-      if stack_trace.present? && defined?(WM::Logger) && defined?(APP_CONFIG)
-        WM::Logger.new(APP_CONFIG['new_aws']).message(
-          feature_key: 'sql_stack_trace',
-          message: {
-            sql: sql,
-            stack_trace: stack_trace
-          }
-        )
+      if $rollout && $rollout.active?(:log_sql_events)
+        stack_trace = Marginalia::Comment.stack_trace
+        if stack_trace.present? && defined?(WM::Logger) && defined?(APP_CONFIG)
+          WM::Logger.new(APP_CONFIG['new_aws']).message(
+            feature_key: 'sql_stack_trace',
+            message: {
+              sql: sql,
+              stack_trace: stack_trace
+            }
+          )
+        end
       end
 
       sql
